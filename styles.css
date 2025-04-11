@@ -24,6 +24,7 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px;
 }
 
 body {
@@ -39,6 +40,10 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   color: var(--color-primary);
   margin-bottom: 0.8rem;
+}
+
+p, span, div, li, td, th, label, input, select, textarea, button {
+  font-family: var(--font-main);
 }
 
 h2 {
@@ -62,10 +67,6 @@ h3 {
   margin-bottom: 1.2rem;
 }
 
-p {
-  margin-bottom: 1rem;
-}
-
 a {
   color: var(--color-primary);
   text-decoration: none;
@@ -76,8 +77,11 @@ a:hover {
   color: var(--color-accent);
 }
 
-/* Sistema unificado de botones */
-.btn {
+/* Sistema unificado de botones optimizado */
+.btn, 
+button,
+.button,
+[class*="btn-"] {
   padding: 0.8rem 1.5rem;
   border-radius: var(--radius);
   font-family: var(--font-main);
@@ -92,55 +96,105 @@ a:hover {
   justify-content: center;
   gap: 8px;
   border: none;
+  text-decoration: none;
 }
 
-.btn-primario, .btn-pago, .btn-reservar, .btn-descargar {
+.btn-primario, 
+.btn-pago, 
+.btn-reservar, 
+.btn-descargar,
+button[data-toggle="modal"],
+.btn-primary,
+.btn-accion {
   background-color: var(--color-primary);
   color: var(--color-white);
   border: none;
 }
 
-.btn-primario:hover, .btn-pago:hover, .btn-reservar:hover, .btn-descargar:hover {
+.btn-primario:hover, 
+.btn-pago:hover, 
+.btn-reservar:hover, 
+.btn-descargar:hover,
+button[data-toggle="modal"]:hover,
+.btn-primary:hover,
+.btn-accion:hover {
   background-color: var(--color-secondary);
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  color: var(--color-white);
 }
 
-.btn-secundario, .btn-modificar {
+.btn-secundario, 
+.btn-modificar,
+.btn-compartir,
+.btn-secondary,
+.btn-cerrar {
   background-color: transparent;
   color: var(--color-primary);
   border: 1px solid var(--color-primary);
 }
 
-.btn-secundario:hover, .btn-modificar:hover {
+.btn-secundario:hover, 
+.btn-modificar:hover,
+.btn-compartir:hover,
+.btn-secondary:hover,
+.btn-cerrar:hover {
   background-color: var(--color-primary);
   color: var(--color-white);
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Eliminar estilos duplicados para garantizar consistencia */
-.btn-pago {
+/* Estilos para botones en el planificador */
+.botones-navegacion button {
+  padding: 12px 25px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.botones-navegacion button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para modal de pago */
+.modal-pago .btn-opcion-pago {
   background-color: var(--color-primary);
-  color: var(--color-white);
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
-.destino button {
-  margin: 0 1.5rem 1.5rem;
-  width: calc(100% - 3rem);
+.modal-pago .btn-opcion-pago:hover {
+  background-color: var(--color-accent);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.destino button:first-of-type {
-  background-color: transparent;
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
+/* Estilos para acciones del itinerario */
+.acciones-itinerario {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
 }
 
-.destino button:first-of-type:hover {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+.btn-descargar, 
+.btn-compartir {
+  min-width: 200px;
 }
 
+/* Mejorar estilos de formularios */
 input, select, textarea {
   width: 100%;
   padding: 0.8rem;
@@ -149,219 +203,36 @@ input, select, textarea {
   border-radius: var(--radius);
   font-family: var(--font-main);
   font-size: 1rem;
+  background-color: var(--color-white);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus, 
+select:focus, 
+textarea:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 2px rgba(161, 136, 127, 0.2);
 }
 
-ul {
-  list-style: none;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-section {
-  padding: 4rem 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-/* Header y Navegación */
-header {
-  background-color: var(--color-primary);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 4%;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.logo {
+/* Estilos para checkboxes de destinos */
+.destinos-checkbox {
   display: flex;
   align-items: center;
+  margin-bottom: 0.8rem;
 }
 
-.logo h1 {
-  color: var(--color-white);
-  font-size: 1.4rem;
-  margin: 0;
-  letter-spacing: 0.5px;
+.destinos-checkbox input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: auto;
 }
 
-.nav-links {
-  margin-left: auto;
-}
-
-nav ul {
-  display: flex;
-  gap: 1.2rem;
-}
-
-nav ul li a {
-  color: var(--color-white);
-  font-weight: 500;
-  padding: 0.4rem 0.6rem;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  opacity: 0.9;
-}
-
-nav ul li a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--color-white);
-  opacity: 1;
-}
-
-/* Estilos para redes sociales en header */
-.redes-header {
-  display: flex;
-  gap: 0.8rem;
-  margin-left: 1rem;
-}
-
-.redes-header .red-social {
-  color: var(--color-white);
+.destinos-checkbox label {
+  font-family: var(--font-main);
   font-size: 1rem;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: var(--transition);
+  cursor: pointer;
 }
 
-.redes-header .red-social:hover {
-  background-color: var(--color-accent);
-  transform: translateY(-2px);
-  color: var(--color-white);
-}
-
-/* Sección de Inicio */
-#inicio {
-  background-color: var(--color-white);
-}
-
-.banner-principal {
-  /* Degradado con un color café semitransparente */
-  background-image: linear-gradient(
-      to bottom,
-      rgba(93, 64, 55, 0.5),  /* Marrón café semitransparente */
-      rgba(93, 64, 55, 0.7)   /* Un poco más opaco hacia abajo */
-    ),
-    url('img/PDC.jpg');
-    
-  background-size: cover;
-  background-position: center;
-  background-blend-mode: overlay; /* Mezcla el degradado con la imagen */
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: var(--color-white);
-  padding: 0 1rem;
-}
-
-.banner-principal h2 {
-  font-size: 3rem;
-  color: var(--color-white);
-  margin-bottom: 2rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.banner-principal button {
-  font-size: 1.2rem;
-  padding: 1rem 2rem;
-  background-color: var(--color-accent);
-}
-
-.video-promocional {
-  max-width: 800px;
-  margin: 3rem auto;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-.video-promocional video {
-  width: 100%;
-  display: block;
-}
-
-/* Sección de Destinos */
-#destinos {
-  background-color: var(--color-light);
-}
-
-/* Estilos para el sidebar de filtros */
-.sidebar {
-  background-color: var(--color-white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  border-left: 4px solid var(--color-primary);
-}
-
-.sidebar h4 {
-  color: var(--color-primary);
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 2px solid var(--color-accent);
-  font-size: 1.3rem;
-}
-
-.filtro {
-  margin-bottom: 1.5rem;
-}
-
-.filtro label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--color-dark);
-}
-
-.filtro select,
-.filtro input[type="range"] {
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #ddd;
-  border-radius: var(--radius);
-  background-color: var(--color-light);
-  transition: var(--transition);
-}
-
-.filtro select:focus,
-.filtro input[type="range"]:focus {
-  border-color: var(--color-accent);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(161, 136, 127, 0.2);
-}
-
+/* Mejorar estilos de formularios */
 .form-check {
   margin-bottom: 0.5rem;
 }
@@ -656,18 +527,6 @@ nav ul li a:hover {
   justify-content: space-between;
   margin-top: 30px;
   gap: 15px;
-}
-
-.botones-navegacion button {
-  padding: 12px 25px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-}
-
-.botones-navegacion button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .video-card:hover {
@@ -1124,17 +983,6 @@ nav ul li a:hover {
   line-height: 1.5;
 }
 
-.acciones-itinerario {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-}
-
-.btn-descargar, .btn-compartir {
-  min-width: 200px;
-}
-
 /* Estilos responsivos para el resumen */
 @media (max-width: 768px) {
   .resumen-item {
@@ -1248,4 +1096,69 @@ nav ul li a:hover {
 .comparador-precios tbody tr:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos especificos para modales */
+.modal-contenido {
+  background-color: white;
+  padding: 30px;
+  border-radius: var(--radius);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-main);
+}
+
+.modal-contenido h3 {
+  color: var(--color-primary);
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--color-accent);
+  font-family: var(--font-headings);
+}
+
+/* Media queries para responsividad mejorada */
+@media (max-width: 767px) {
+  /* Ajustes para botones en pantallas pequeñas */
+  .btn, 
+  button,
+  .button,
+  [class*="btn-"] {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  .acciones-itinerario {
+    flex-direction: column;
+  }
+  
+  .btn-descargar, 
+  .btn-compartir {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Mejora del diseño responsive */
+  .resumen-item {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  
+  .resumen-item strong {
+    margin-bottom: 0.3rem;
+  }
+  
+  /* Ajustes para modales en móvil */
+  .opciones-pago {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-primary, 
+  .btn-secondary, 
+  .btn-opcion-pago {
+    width: 100%;
+    margin: 5px 0;
+  }
 }

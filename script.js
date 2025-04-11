@@ -1312,4 +1312,537 @@ function reservarPaquete(tipoPaquete) {
     
     // Ir al paso 3 directamente
     mostrarPaso(3);
-} 
+}
+
+// Función para inicializar la página con todos los eventos y configuraciones
+function inicializar() {
+    // Vincular eventos para el planificador
+    const transporteSelect = document.getElementById('transporte-plan');
+    const alimentacionSelect = document.getElementById('alimentacion-plan');
+    const guiaSelect = document.getElementById('guia-plan');
+    const hospedajeSelect = document.getElementById('hospedaje-plan');
+    const serviciosExtraSelect = document.getElementById('servicios-extra');
+
+    if (transporteSelect) transporteSelect.addEventListener('change', calcularCostos);
+    if (alimentacionSelect) alimentacionSelect.addEventListener('change', calcularCostos);
+    if (guiaSelect) guiaSelect.addEventListener('change', calcularCostos);
+    if (hospedajeSelect) hospedajeSelect.addEventListener('change', calcularCostos);
+    if (serviciosExtraSelect) serviciosExtraSelect.addEventListener('change', calcularCostos);
+    
+    // Inicializar valores del planificador
+    calcularCostos();
+    
+    // Para el paso de confirmación
+    const botonConfirmacion = document.querySelector('#paso-2 button[onclick*="mostrarPaso(3)"]');
+    if (botonConfirmacion) {
+        botonConfirmacion.addEventListener('click', actualizarResumen);
+    }
+    
+    // Agregar evento a todos los controles de filtro
+    // Select elements
+    const selectFilters = document.querySelectorAll('#filter-type, #filter-location, #filter-price, #filter-duration');
+    selectFilters.forEach(filter => {
+        if (filter) filter.addEventListener('change', aplicarFiltros);
+    });
+    
+    // Checkbox elements
+    const checkboxFilters = document.querySelectorAll('#filter-accessibility, #filter-activity-senderismo, #filter-activity-montanas, #filter-activity-cultural, #filter-activity-acuatico, #filter-activity-gastronomia');
+    checkboxFilters.forEach(filter => {
+        if (filter) filter.addEventListener('change', aplicarFiltros);
+    });
+    
+    // Vincular eventos para los botones de filtro
+    const botonResetFiltros = document.getElementById('reset-filtros');
+    if (botonResetFiltros) {
+        botonResetFiltros.addEventListener('click', reiniciarFiltros);
+    }
+    
+    // Inicializar sidebar responsive
+    inicializarSidebarResponsive();
+
+    // Verificar si hay destinos al cargar la página
+    if (document.querySelector('.destino')) {
+        aplicarFiltros();
+    }
+
+    // Inicializar información de clima
+    actualizarInfoClima();
+}
+
+// Función para manejar el sidebar responsive
+function inicializarSidebarResponsive() {
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    }
+}
+
+// Función para reiniciar los filtros
+function reiniciarFiltros() {
+    // Resetear selects
+    const selectsToReset = ['filter-type', 'filter-location', 'filter-price', 'filter-duration'];
+    selectsToReset.forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) elem.value = '';
+    });
+    
+    // Resetear checkboxes
+    const checkboxesToReset = [
+        'filter-accessibility', 
+        'filter-activity-senderismo', 
+        'filter-activity-montanas', 
+        'filter-activity-cultural', 
+        'filter-activity-acuatico', 
+        'filter-activity-gastronomia'
+    ];
+    
+    checkboxesToReset.forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) elem.checked = false;
+    });
+    
+    // Mostrar todos los destinos
+    document.querySelectorAll('.destino').forEach(destino => {
+        destino.style.display = 'block';
+    });
+    
+    // Ocultar mensaje de no resultados
+    const mensajeNoResultados = document.getElementById('mensaje-no-resultados');
+    if (mensajeNoResultados) {
+        mensajeNoResultados.style.display = 'none';
+    }
+}
+
+// Función para aplicar filtros a los destinos
+function aplicarFiltros() {
+    // Obtener valores de los filtros
+    const tipoFiltro = document.getElementById('filter-type')?.value || '';
+    const ubicacionFiltro = document.getElementById('filter-location')?.value || '';
+    const precioFiltro = document.getElementById('filter-price')?.value || '';
+    const duracionFiltro = document.getElementById('filter-duration')?.value || '';
+    
+    // Obtener valores de los checkboxes
+    const accesibilidadFiltro = document.getElementById('filter-accessibility')?.checked || false;
+    const senderismoFiltro = document.getElementById('filter-activity-senderismo')?.checked || false;
+    const montanasFiltro = document.getElementById('filter-activity-montanas')?.checked || false;
+    const culturalFiltro = document.getElementById('filter-activity-cultural')?.checked || false;
+    const acuaticoFiltro = document.getElementById('filter-activity-acuatico')?.checked || false;
+    const gastronomiaFiltro = document.getElementById('filter-activity-gastronomia')?.checked || false;
+    
+    // Filtrar los destinos
+    const destinos = document.querySelectorAll('.destino');
+    let destinosVisibles = 0;
+    
+    destinos.forEach(destino => {
+        // Obtener atributos de datos del destino
+        const tipo = destino.getAttribute('data-type') || '';
+        const ubicacion = destino.getAttribute('data-location') || '';
+        const precio = destino.getAttribute('data-price') || '';
+        const duracion = destino.getAttribute('data-duration') || '';
+        const actividades = destino.getAttribute('data-activities') || '';
+        const esAccesible = destino.getAttribute('data-accessible') === 'true';
+        
+        // Realizar filtrado
+        let mostrar = true;
+        
+        if (tipoFiltro && tipo !== tipoFiltro) mostrar = false;
+        if (ubicacionFiltro && ubicacion !== ubicacionFiltro) mostrar = false;
+        if (precioFiltro && precio !== precioFiltro) mostrar = false;
+        if (duracionFiltro && duracion !== duracionFiltro) mostrar = false;
+        
+        // Filtros de checkbox
+        if (accesibilidadFiltro && !esAccesible) mostrar = false;
+        if (senderismoFiltro && !actividades.includes('senderismo')) mostrar = false;
+        if (montanasFiltro && !actividades.includes('montanas')) mostrar = false;
+        if (culturalFiltro && !actividades.includes('cultural')) mostrar = false;
+        if (acuaticoFiltro && !actividades.includes('acuatico')) mostrar = false;
+        if (gastronomiaFiltro && !actividades.includes('gastronomia')) mostrar = false;
+        
+        // Mostrar u ocultar según resultados
+        destino.style.display = mostrar ? 'block' : 'none';
+        
+        // Contar destinos visibles
+        if (mostrar) destinosVisibles++;
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    const mensajeNoResultados = document.getElementById('mensaje-no-resultados');
+    if (mensajeNoResultados) {
+        mensajeNoResultados.style.display = destinosVisibles === 0 ? 'block' : 'none';
+    }
+}
+
+// Función para actualizar costos base según el destino
+function actualizarCostosBase() {
+    const destinoSelect = document.getElementById('destino-planificador');
+    if (!destinoSelect) return; // Evitar error si el elemento no existe
+    
+    // Verificar si tiene opciones antes de acceder a selectedIndex
+    if (destinoSelect.options && destinoSelect.options.length > 0) {
+        const precioBase = destinoSelect.options[destinoSelect.selectedIndex].getAttribute('data-precio-base');
+        calcularCostos();
+    }
+}
+
+// Función auxiliar para distribuir los destinos entre los días disponibles
+function distribuirDestinos(destinos, diaActual, duracionTotal) {
+    // Si hay pocos destinos para los días disponibles, distribuir equitativamente
+    if (destinos.length <= duracionTotal) {
+        return (diaActual <= destinos.length) ? [destinos[diaActual - 1]] : [];
+    }
+    
+    // Si hay más destinos que días, agrupar de forma óptima (máximo 2 por día)
+    const destinosPorDia = Math.ceil(destinos.length / duracionTotal);
+    const inicio = (diaActual - 1) * destinosPorDia;
+    const fin = Math.min(inicio + destinosPorDia, destinos.length);
+    
+    return destinos.slice(inicio, fin);
+}
+
+// Función auxiliar para obtener el nombre legible de un destino
+function obtenerNombreDestino(codigoDestino) {
+    const nombres = {
+        'parque-cafe': 'Parque del Café',
+        'panaca': 'PANACA',
+        'consota': 'Parque Consotá',
+        'ukumari': 'Bioparque Ukumarí'
+    };
+    
+    return nombres[codigoDestino] || codigoDestino;
+}
+
+// Función para confirmar reserva (simplificada)
+function confirmarReserva() {
+    alert('¡Tu reserva ha sido confirmada! Te hemos enviado el itinerario a tu correo y WhatsApp.');
+}
+
+// Función para actualizar el resumen de viaje
+function actualizarResumen() {
+    // Verificar si ya existe la función en el script
+    if (typeof window.actualizarResumenViaje === 'function') {
+        // Guardar datos para asegurar que el resumen tenga toda la información
+        guardarInfoPaso1();
+        guardarInfoPaso2();
+        
+        // Llamar a la función existente
+        actualizarResumenViaje();
+        generarItinerario();
+        return;
+    }
+
+    // Obtener valores seleccionados para los destinos
+    const destinosSeleccionados = [];
+    const destinosTexto = [];
+    document.querySelectorAll('input[name="destinos[]"]:checked').forEach(checkbox => {
+        destinosSeleccionados.push(checkbox.value);
+        destinosTexto.push(checkbox.nextElementSibling.textContent.trim());
+    });
+    const resumenDestinoEl = document.getElementById('resumen-destino');
+    if (resumenDestinoEl) {
+        resumenDestinoEl.textContent = destinosTexto.length > 0 ? destinosTexto.join(', ') : 'Ninguno seleccionado';
+    }
+    
+    // Duración
+    const duracionSelect = document.getElementById('duracion-viaje');
+    const resumenDuracionEl = document.getElementById('resumen-duracion');
+    if (duracionSelect && resumenDuracionEl) {
+        resumenDuracionEl.textContent = duracionSelect.options[duracionSelect.selectedIndex].text;
+    }
+    
+    // Tipo de viajero
+    const tipoViajeroSelect = document.getElementById('tipo-viajero');
+    const resumenTipoViajeroEl = document.getElementById('resumen-tipo-viajero');
+    if (tipoViajeroSelect && resumenTipoViajeroEl) {
+        resumenTipoViajeroEl.textContent = tipoViajeroSelect.options[tipoViajeroSelect.selectedIndex].text;
+    }
+    
+    // Transporte
+    const transporteSelect = document.getElementById('transporte-plan');
+    const resumenTransporteEl = document.getElementById('resumen-transporte');
+    if (transporteSelect && resumenTransporteEl) {
+        resumenTransporteEl.textContent = transporteSelect.options[transporteSelect.selectedIndex].text;
+    }
+    
+    // Hospedaje
+    const hospedajeSelect = document.getElementById('hospedaje-plan');
+    const resumenHospedajeEl = document.getElementById('resumen-hospedaje');
+    if (hospedajeSelect && resumenHospedajeEl) {
+        resumenHospedajeEl.textContent = hospedajeSelect.options[hospedajeSelect.selectedIndex].text;
+    }
+    
+    // Alimentación
+    const alimentacionSelect = document.getElementById('alimentacion-plan');
+    const resumenAlimentacionEl = document.getElementById('resumen-alimentacion');
+    if (alimentacionSelect && resumenAlimentacionEl) {
+        resumenAlimentacionEl.textContent = alimentacionSelect.options[alimentacionSelect.selectedIndex].text;
+    }
+    
+    // Guía
+    const guiaSelect = document.getElementById('guia-plan');
+    const resumenGuiaEl = document.getElementById('resumen-guia');
+    if (guiaSelect && resumenGuiaEl) {
+        resumenGuiaEl.textContent = guiaSelect.options[guiaSelect.selectedIndex].text;
+    }
+    
+    // Obtener los servicios extra seleccionados y unir sus textos
+    const serviciosSelect = document.getElementById('servicios-extra');
+    const resumenServiciosEl = document.getElementById('resumen-servicios');
+    if (serviciosSelect && resumenServiciosEl) {
+        const serviciosSeleccionados = Array.from(serviciosSelect.selectedOptions)
+            .map(option => option.textContent.trim())
+            .join(', ');
+        resumenServiciosEl.textContent = serviciosSeleccionados || 'Ninguno';
+    }
+    
+    // Costo
+    const costoTotalEl = document.getElementById('costo-total'); 
+    const resumenCostoEl = document.getElementById('resumen-costo');
+    if (costoTotalEl && resumenCostoEl) {
+        resumenCostoEl.textContent = costoTotalEl.textContent;
+    }
+    
+    // Generar itinerario basado en los datos seleccionados
+    generarItinerarioPersonalizado(destinosSeleccionados, parseInt(duracionSelect?.value || 1));
+}
+
+// Función para generar itinerario optimizado con elementos personalizados
+function generarItinerarioPersonalizado(destinos, duracion) {
+    // Contenedor donde se mostrará el itinerario
+    const itinerarioContainer = document.getElementById('itinerario-generado');
+    if (!itinerarioContainer) return;
+    
+    itinerarioContainer.innerHTML = '';
+    
+    if (!destinos || destinos.length === 0) {
+        itinerarioContainer.innerHTML = '<p>Por favor, selecciona al menos un destino para generar un itinerario.</p>';
+        return;
+    }
+    
+    // Opciones seleccionadas
+    const transporteEl = document.getElementById('transporte-plan');
+    const hospedajeEl = document.getElementById('hospedaje-plan');
+    const alimentacionEl = document.getElementById('alimentacion-plan');
+    
+    const transporte = transporteEl?.value || 'privado';
+    const hospedaje = hospedajeEl?.value || 'no';
+    const alimentacion = alimentacionEl?.value || 'tipico';
+    
+    // Crear el contenido del itinerario
+    let itinerarioHTML = '';
+    
+    // Estructura para cada día según la duración seleccionada
+    for (let dia = 1; dia <= duracion; dia++) {
+        itinerarioHTML += `<div class="dia-itinerario">
+            <h5>Día ${dia}</h5>`;
+        
+        // Seleccionar destinos para este día (distribuir destinos entre los días disponibles)
+        const destinosDelDia = distribuirDestinos(destinos, dia, duracion);
+        
+        // Mañana
+        itinerarioHTML += `<div class="franja-horaria">
+            <h6>Mañana (8:00 AM - 12:00 PM)</h6>
+            <ul>`;
+            
+        if (destinosDelDia.length > 0) {
+            itinerarioHTML += `<li>Visita a ${obtenerNombreDestino(destinosDelDia[0])}</li>`;
+            
+            // Añadir actividades específicas según el destino
+            if (destinosDelDia[0] === 'parque-cafe') {
+                itinerarioHTML += `<li>Recorrido en Jeep Willys (30 min)</li>
+                <li>Show del Café (40 min)</li>`;
+            } else if (destinosDelDia[0] === 'panaca') {
+                itinerarioHTML += `<li>Exhibición de animales (1 hora)</li>
+                <li>Show de aves (30 min)</li>`;
+            } else if (destinosDelDia[0] === 'ukumari') {
+                itinerarioHTML += `<li>Visita al ecosistema africano (45 min)</li>
+                <li>Recorrido por el aviario (30 min)</li>`;
+            } else if (destinosDelDia[0] === 'consota') {
+                itinerarioHTML += `<li>Piscinas y atracciones acuáticas (1 hora)</li>
+                <li>Recorrido guiado por la granja (30 min)</li>`;
+            }
+        } else {
+            itinerarioHTML += `<li>Desayuno en el hotel</li>
+            <li>Tiempo libre para recorrer puntos de interés cercanos</li>`;
+        }
+        
+        // Añadir traslado si corresponde
+        if (dia === 1) {
+            itinerarioHTML += `<li>Traslado desde el punto de encuentro (Tiempo estimado: 30 min)</li>`;
+        }
+        
+        itinerarioHTML += `</ul>
+        </div>`;
+        
+        // Almuerzo
+        itinerarioHTML += `<div class="franja-horaria">
+            <h6>Almuerzo (12:00 PM - 2:00 PM)</h6>
+            <ul>`;
+            
+        if (alimentacion === 'tipico') {
+            itinerarioHTML += `<li>Almuerzo típico en restaurante local (incluido)</li>`;
+        } else if (alimentacion === 'vegetariano') {
+            itinerarioHTML += `<li>Menú vegetariano en restaurante especializado (incluido)</li>`;
+        } else if (alimentacion === 'gourmet') {
+            itinerarioHTML += `<li>Experiencia gastronómica gourmet (incluido)</li>`;
+        } else {
+            itinerarioHTML += `<li>Almuerzo básico (incluido)</li>`;
+        }
+        
+        itinerarioHTML += `</ul>
+        </div>`;
+        
+        // Tarde
+        itinerarioHTML += `<div class="franja-horaria">
+            <h6>Tarde (2:00 PM - 6:00 PM)</h6>
+            <ul>`;
+            
+        if (destinosDelDia.length > 1) {
+            itinerarioHTML += `<li>Visita a ${obtenerNombreDestino(destinosDelDia[1])}</li>`;
+            
+            // Añadir actividades específicas según el destino
+            if (destinosDelDia[1] === 'parque-cafe') {
+                itinerarioHTML += `<li>Atracciones mecánicas (2 horas)</li>
+                <li>Teleférico y mirador (30 min)</li>`;
+            } else if (destinosDelDia[1] === 'panaca') {
+                itinerarioHTML += `<li>Espectáculo ecuestre (45 min)</li>
+                <li>Interacción con animales de granja (1 hora)</li>`;
+            } else if (destinosDelDia[1] === 'ukumari') {
+                itinerarioHTML += `<li>Tour por reptiles y anfibios (1 hora)</li>
+                <li>Visita al área de mamíferos (45 min)</li>`;
+            } else if (destinosDelDia[1] === 'consota') {
+                itinerarioHTML += `<li>Sendero de la memoria indígena (45 min)</li>
+                <li>Lagos de pesca (1 hora)</li>`;
+            }
+        } else if (destinosDelDia.length > 0) {
+            // Continuamos en el mismo destino de la mañana
+            itinerarioHTML += `<li>Continuación de actividades en ${obtenerNombreDestino(destinosDelDia[0])}</li>`;
+            
+            if (destinosDelDia[0] === 'parque-cafe') {
+                itinerarioHTML += `<li>Atracciones mecánicas (2 horas)</li>
+                <li>Museo del Café (40 min)</li>`;
+            } else if (destinosDelDia[0] === 'panaca') {
+                itinerarioHTML += `<li>Espectáculo ecuestre (45 min)</li>
+                <li>Demostración de ordeño (30 min)</li>`;
+            } else if (destinosDelDia[0] === 'ukumari') {
+                itinerarioHTML += `<li>Visita a los ecosistemas americanos (1 hora)</li>
+                <li>Observación de fauna nocturna (45 min)</li>`;
+            } else if (destinosDelDia[0] === 'consota') {
+                itinerarioHTML += `<li>Réplica de Pereira Antigua (45 min)</li>
+                <li>Actividades deportivas (1 hora)</li>`;
+            }
+        } else {
+            itinerarioHTML += `<li>Tiempo libre para actividades opcionales</li>
+            <li>Tour por la ciudad (2 horas)</li>`;
+        }
+        
+        itinerarioHTML += `</ul>
+        </div>`;
+        
+        // Noche
+        itinerarioHTML += `<div class="franja-horaria">
+            <h6>Noche (6:00 PM - 10:00 PM)</h6>
+            <ul>`;
+            
+        // Si hay hospedaje o es el último día
+        if (hospedaje === 'si' && dia < duracion) {
+            itinerarioHTML += `<li>Cena en el hotel o restaurante recomendado</li>
+            <li>Alojamiento en hotel categoría turista</li>`;
+            
+            // Sugerencias de hospedaje según la zona
+            itinerarioHTML += `<li>Sugerencias de hospedaje:`;
+            if (destinosDelDia.includes('parque-cafe') || destinosDelDia.includes('panaca')) {
+                itinerarioHTML += `
+                <ul>
+                    <li>Hotel Mocawa Resort (Montenegro)</li>
+                    <li>Decameron Panaca (Quimbaya)</li>
+                    <li>Hostería Los Naranjales (Montenegro)</li>
+                </ul>`;
+            } else if (destinosDelDia.includes('ukumari') || destinosDelDia.includes('consota')) {
+                itinerarioHTML += `
+                <ul>
+                    <li>Hotel Movich (Pereira Centro)</li>
+                    <li>Sonesta Hotel Pereira</li>
+                    <li>Hotel Don Alfonso (Pereira)</li>
+                </ul>`;
+            } else {
+                itinerarioHTML += `
+                <ul>
+                    <li>Hotel Soratama (Pereira Centro)</li>
+                    <li>Kolibrí Hostel (Pereira)</li>
+                    <li>Hotel Boutique Sazagua (Pereira)</li>
+                </ul>`;
+            }
+            itinerarioHTML += `</li>`;
+        } else if (dia === duracion) {
+            // Último día
+            itinerarioHTML += `<li>Cena de despedida (opcional)</li>
+            <li>Traslado al punto de regreso (Tiempo estimado: 30 min)</li>`;
+        } else {
+            itinerarioHTML += `<li>Tiempo libre para actividades nocturnas</li>
+            <li>Regreso al punto de encuentro</li>`;
+        }
+        
+        itinerarioHTML += `</ul>
+        </div>
+        </div>`;
+    }
+    
+    // Añadir notas adicionales
+    itinerarioHTML += `
+    <div class="notas-itinerario">
+        <h5>Notas importantes:</h5>
+        <ul>
+            <li>Se recomienda llevar protector solar, repelente de insectos y ropa cómoda.</li>
+            <li>Los horarios pueden ajustarse según condiciones climáticas.</li>
+            <li>El transporte entre destinos está incluido con el tipo de transporte seleccionado.</li>
+            ${hospedaje === 'si' ? '<li>El hospedaje incluye desayuno continental.</li>' : ''}
+            ${alimentacion !== 'tipico' ? '<li>Las opciones de alimentación especial deben confirmarse con 24 horas de anticipación.</li>' : ''}
+        </ul>
+    </div>
+    
+    <div class="acciones-itinerario">
+        <button onclick="descargarItinerario()" class="btn btn-descargar">
+            <i class="fas fa-download"></i> Descargar Itinerario
+        </button>
+        <button onclick="compartirItinerario()" class="btn btn-secundario btn-compartir">
+            <i class="fas fa-share-alt"></i> Compartir
+        </button>
+    </div>`;
+    
+    // Insertar el itinerario en el contenedor
+    itinerarioContainer.innerHTML = itinerarioHTML;
+}
+
+// Inicializar cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar los listeners para los checkboxes de destinos
+    const checkboxesDestinos = document.querySelectorAll('.destinos-checkbox input[type="checkbox"]');
+    checkboxesDestinos.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            actualizarDestinosSeleccionados();
+        });
+    });
+    
+    // Configurar listener para cambio en duración
+    const duracionViaje = document.getElementById('duracion-viaje');
+    if (duracionViaje) {
+        duracionViaje.addEventListener('change', actualizarInfoClima);
+    }
+    
+    // Inicializar información de clima
+    actualizarInfoClima();
+    
+    // Configurar listeners para los selectores en el paso 2
+    const selectoresPaso2 = document.querySelectorAll('#paso-2 select');
+    selectoresPaso2.forEach(selector => {
+        selector.addEventListener('change', calcularCostos);
+    });
+    
+    // Inicializar la página
+    inicializar();
+}); 
